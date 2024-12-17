@@ -407,10 +407,12 @@ function resetGame() {
 
   // Game4 초기화
   mini4_gameStarted = false;
+  mini4_explanationImage = loadImage('game4/MiniGame4_Asset_Explanation.png');
   mini4_countdown = 7;
   mini4_timerRunning = false;
   mini4_pressCount = 0;
   mini4_countdownFinished = false;
+  mini4_hearts = []; // 하트 배열 초기화
 
   // Custom 초기화
   cus1_selected_icon = int(random(0,7));
@@ -423,14 +425,20 @@ function resetGame() {
   // frameCount 기반 로직 초기화
   recent_frame = frameCount;
 
+  qrexplainVisible = false;
+
+  const qrCodeDiv = document.querySelector('#qr-code');
+  if (qrCodeDiv) {
+    qrCodeDiv.style.display = 'none';
+  }
+
   // 필요하다면 사운드, 애니메이션, 타이머 등을 모두 초기 상태로
 }
-
 
 // Image
 function preload() {
   //Load Font
-  font = loadFont('BBIDDUL.ttf');
+  font = loadFont('GmarketSansTTFMedium.ttf');
 
   //Home
   home_bg = loadImage('home/Home_Background_withoutButton.png');
@@ -463,7 +471,7 @@ function preload() {
   resultImages.Draw = loadImage('game1/game1_Background_result_Draw.png');
   stopwatchImage = loadImage('game1/game1_Asset_timer.png');
   customFont = loadFont('game1/adooE.otf');
-  explanationImage = loadImage('game1/MiniGame1_Asset_Explanation-2.png');
+  explanationImage = loadImage('game2/MiniGame2_Asset_Explanation.png');
   gifBackground = loadImage('game1/MiniGame1_Asset_MovingRabbit.gif');
   resultGifImages.Win = loadImage('game1/MiniGame1_Asset_RabbitWin.png');
   resultGifImages.Lose = loadImage('game1/MiniGame1_Asset_RabbitLose.png');
@@ -573,7 +581,7 @@ function preload() {
   cus1_ment = [];
   cus1_ment_clicked = [];
   cus1_frame = [];
-  cus1_list = ['Money', 'Luck', 'Job', 'Heart', 'Health', 'Fan', 'Daily', 'Aca'];
+  cus1_list = ['Luck', 'Aca', 'Fan', 'Job', 'Heart', 'Health', 'Daily', 'Money'];
 
   for (let i = 0; i <= 7; i++) {
     cus1_icon.push(loadImage('cus1/Cus_Asset_'+cus1_list[i]+'_0.png'));
@@ -619,7 +627,7 @@ function preload() {
   }
 
   // Loading
-  loading = loadImage('Loading_Background.GIF');
+  loading = loadImage('Loading_Background.gif');
 
   // Back
   cus_back = [];
@@ -722,19 +730,19 @@ function draw() {
 
   if(gm == 0){
     image(home_bg, 0, 0, windowWidth, windowHeight);
-    image(home_start_img, windowWidth/2-120-10*sin(frameCount * 0.05)*3/5/2, windowHeight*0.7+3*sin(frameCount * 0.05)*3/5/2, 400*3/5+10*sin(frameCount * 0.05)*3/5, 250*3/5+3*sin(frameCount * 0.05)*3/5);
+    image(home_start_img, windowWidth/2-120-10*sin(frameCount * 0.05)*3/5/2, windowHeight*0.7-80+3*sin(frameCount * 0.05)*3/5/2, 400*3/5+10*sin(frameCount * 0.05)*3/5, 250*3/5+3*sin(frameCount * 0.05)*3/5);
   }
   else if(gm == 1){
     image(home2_bg, 0, 0, windowWidth, windowHeight);
-    image(home2_enter_img, 900*3/5, 500*3/5+40, 557*3/5, 83*3/5);
-    image(home2_next_img, 900*3/5, 600*3/5+60, 557*3/5, 100*3/5);
+    image(home2_enter_img, 900*3/5, 500*3/5+40-15, 557*3/5, 83*3/5);
+    image(home2_next_img, 900*3/5, 600*3/5+60-15, 557*3/5, 100*3/5);
 
     if(name_enter_announce){
       push();
-      textSize(50*3/5);
+      textSize(30*3/5);
       fill(200);
       textFont(font);
-      text("이름을 입력해주세요.", 1020*3/5, 560*3/5+40);
+      text("이름을 입력해주세요.", 1020*3/5+5, 560*3/5+40-19);
       pop();
     }
     
@@ -1193,10 +1201,10 @@ if (mini3_mini3_bgImage === mini3_mini3_nextBg && !mini3_showHalfBall) {
 
     if (mini3_halfBallClicks < 3) {
       // 반쪽 공 확장: 7배 이상 커지지 않도록 제한
-      if (mini3_halfBallScale < 2.5 * 60) {  // 60은 원래 이미지 크기 (원래 크기의 7배)
-        mini3_halfBallScale += 2.; // 확장 속도 조절
+      if (mini3_halfBallScale < 1.5 * 60) {  // 60은 원래 이미지 크기 (원래 크기의 7배)
+        mini3_halfBallScale += 3.; // 확장 속도 조절
       } else {
-        mini3_halfBallScale = 2.5 * 60; // 크기가 7배가 되었으면 더 이상 커지지 않도록 설정
+        mini3_halfBallScale = 1.5 * 60; // 크기가 7배가 되었으면 더 이상 커지지 않도록 설정
       }
 
       if (!sMiniGame3BallMove.isPlaying()) {
@@ -1662,21 +1670,22 @@ let canSelect = false; // 클릭을 허용할지 여부를 제어하는 변수
 
 function mousePressed() {
   // 게임 상태가 0일 때 (홈 화면)
-  if (gm == 0 && mouseX > windowWidth / 2 - 200 * 3 / 5 && mouseX < windowWidth / 2 + 200 * 3 / 5 && mouseY > windowHeight * 0.8 && mouseY < windowHeight * 0.8 + 250 * 3 / 5) {
+  if (gm == 0 && mouseX > windowWidth / 2 - 200 * 3 / 5 && mouseX < windowWidth / 2 + 200 * 3 / 5 && mouseY > windowHeight * 0.8 -80 && mouseY < windowHeight * 0.8 -80 + 250 * 3 / 5) {
     gm++; // 게임 상태 변경
   }
   // 게임 상태가 1일 때 (이름 입력 화면)
   else if (gm == 1 && mouseX > 900 * 3 / 5 && mouseX < 1457 * 3 / 5 && mouseY > 500 * 3 / 5+40 && mouseY < 583 * 3 / 5+40 && name_enter_announce) {
     name_enter_announce = false;
     input = createInput('럭키');
-    input.position(570, 475+35);
+    input.position(570, 475+35-15);
     input.size(280, 35);
     input.style('text-align', 'center');
     input.style('font-size', '20px');
     input.style('font-family', 'CustomFont');
+    input.style('color', '#69523D');
     input.style('border', 'none');
     input.style('outline', 'none');
-  } else if (gm == 1 && mouseX > 900 * 3 / 5 && mouseX < 1457 * 3 / 5 && mouseY > 600 * 3 / 5+60 && mouseY < 700 * 3 / 5+60 && input.value() != '' && input.value().length == 4) {
+  } else if (gm == 1 && mouseX > 900 * 3 / 5 && mouseX < 1457 * 3 / 5 && mouseY > 600 * 3 / 5+60-15 && mouseY < 700 * 3 / 5+60-15 && input.value() != '' && input.value().length == 4) {
     user_name = input.value().slice(-2);
     input.remove();
     gm++;
@@ -1992,7 +2001,6 @@ const dataURLtoFile = (dataurl, fileName) => {
   return new File([u8arr], fileName, { type: mime });
 };
 
-// 캡처 후 업로드하는 함수
 async function captureAndUpload() {
   let currentFrameImage = get(386,29,187,282); 
   let pg = createGraphics(187*1.5, 282*1.5); 
@@ -2039,6 +2047,8 @@ async function captureAndUpload() {
 function generateQRCode(url) {
   const qrCodeDiv = document.querySelector('#qr-code');
   qrCodeDiv.innerHTML = '';  // 기존 QR 코드 제거
+
+  qrCodeDiv.style.display = 'block';
 
   qrCodeDiv.style.position = 'absolute';  // 절대 위치 설정
   qrCodeDiv.style.top = `${windowHeight+100}px`;         // 세로 중앙으로 위치 설정
