@@ -2002,9 +2002,9 @@ const dataURLtoFile = (dataurl, fileName) => {
 };
 
 async function captureAndUpload() {
-  let currentFrameImage = get(386,29,187,282); 
-  let pg = createGraphics(187*1.5, 282*1.5); 
-    pg.image(currentFrameImage,0,0,187*1.5, 282*1.5)
+  let currentFrameImage = get(390,33,180,275); 
+  let pg = createGraphics(180*1.5, 275*1.5); 
+    pg.image(currentFrameImage,0,0,180*1.5, 275*1.5)
     let extendeimage = pg.get()
     let base64Image = extendeimage.canvas.toDataURL();
 
